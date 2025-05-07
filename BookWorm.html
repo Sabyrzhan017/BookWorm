@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookWorm - Интернет-магазин книг</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .category-btn.active {
+            background-color: #10b981;
+            color: white;
+        }
+        .cart-preview {
+            transition: all 0.3s ease;
+        }
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Шапка сайта -->
+    <header class="bg-green-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-book text-2xl"></i>
+                    <h1 class="text-2xl font-bold">BookWorm</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="hover:text-green-200 transition">Главная</a>
+                    <a href="#" class="hover:text-green-200 transition">Каталог</a>
+                    <a href="#" class="hover:text-green-200 transition">Акции</a>
+                    <a href="#" class="hover:text-green-200 transition">Доставка</a>
+                    <a href="#" class="hover:text-green-200 transition">Контакты</a>
+                    <div class="relative">
+                        <button id="cart-btn" class="flex items-center space-x-1 hover:text-green-200 transition">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Корзина</span>
+                            <span id="cart-count" class="bg-yellow-400 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
+                        </button>
+                        <div id="cart-preview" class="cart-preview hidden absolute right-0 mt-2 w-72 bg-white text-gray-800 rounded-lg shadow-xl p-4 z-10">
+                            <h3 class="font-bold border-b pb-2">Ваша корзина</h3>
+                            <div id="cart-items" class="max-h-60 overflow-y-auto py-2">
+                                <p class="text-sm text-gray-500">Корзина пуста</p>
+                            </div>
+                            <div class="border-t pt-2 mt-2">
+                                <p class="flex justify-between font-semibold">
+                                    <span>Итого:</span>
+                                    <span id="cart-total">0 ₸</span>
+                                </p>
+                                <button class="w-full bg-green-600 text-white py-2 rounded mt-2 hover:bg-green-700 transition">Оформить заказ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="md:hidden text-xl" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <!-- Мобильное меню -->
+            <div class="md:hidden hidden mt-4" id="mobile-menu">
+                <div class="flex flex-col space-y-3">
+                    <a href="#" class="hover:text-green-200 transition">Главная</a>
+                    <a href="#" class="hover:text-green-200 transition">Каталог</a>
+                    <a href="#" class="hover:text-green-200 transition">Акции</a>
+                    <a href="#" class="hover:text-green-200 transition">Доставка</a>
+                    <a href="#" class="hover:text-green-200 transition">Контакты</a>
+                    <div class="pt-2">
+                        <button id="mobile-cart-btn" class="flex items-center space-x-1 hover:text-green-200 transition">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Корзина (<span id="mobile-cart-count">0</span>)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Герой-баннер -->
+    <section class="bg-gradient-to-r from-green-600 to-green-800 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-4">Читайте больше с BookWorm</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Более 15 000 книг для всех возрастов и интересов по лучшим ценам в Казахстане</p>
+            <div class="relative max-w-md mx-auto">
+                <input type="text" placeholder="Поиск книг, авторов..." class="w-full py-3 px-4 pr-12 rounded-full text-gray-800 focus:outline-none">
+                <button class="absolute right-3 top-3 text-green-600">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Категории -->
+    <section class="py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-6">Категории книг</h2>
+            <div class="flex flex-wrap gap-3">
+                <button class="category-btn active px-4 py-2 rounded-full border border-green-500 text-green-500 hover:bg-green-50 transition">Все</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Бестселлеры</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Художественная</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Фэнтези</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Бизнес</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Психология</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Детские</button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition">Наука</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Популярные книги -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Популярные книги</h2>
+                <a href="#" class="text-green-600 hover:text-green-800 transition">Смотреть все →</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Книга 1 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="discount-badge">-20%</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">1984</h3>
+                        <p class="text-gray-600 text-sm mb-2">Джордж Оруэлл</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(128)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-lg text-green-600">4 500 ₸</span>
+                                <span class="text-sm text-gray-500 line-through ml-2">5 600 ₸</span>
+                            </div>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="1" data-title="1984" data-author="Джордж Оруэлл" data-price="4500">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 2 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="absolute top-2 right-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded text-green-800">Хит</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Мастер и Маргарита</h3>
+                        <p class="text-gray-600 text-sm mb-2">Михаил Булгаков</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(95)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">5 200 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="2" data-title="Мастер и Маргарита" data-author="Михаил Булгаков" data-price="5200">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 3 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Новинка</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Тонкое искусство пофигизма</h3>
+                        <p class="text-gray-600 text-sm mb-2">Марк Мэнсон</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(214)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">6 800 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="3" data-title="Тонкое искусство пофигизма" data-author="Марк Мэнсон" data-price="6800">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 4 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="discount-badge">-15%</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Гарри Поттер и философский камень</h3>
+                        <p class="text-gray-600 text-sm mb-2">Дж. К. Роулинг</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(312)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-lg text-green-600">7 500 ₸</span>
+                                <span class="text-sm text-gray-500 line-through ml-2">8 800 ₸</span>
+                            </div>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="4" data-title="Гарри Поттер и философский камень" data-author="Дж. К. Роулинг" data-price="7500">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Акции -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Акции и скидки</h2>
+                <a href="#" class="text-green-600 hover:text-green-800 transition">Смотреть все →</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg p-6 text-white flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/3 mb-4 md:mb-0">
+                        <i class="fas fa-percent text-5xl"></i>
+                    </div>
+                    <div class="md:w-2/3">
+                        <h3 class="text-xl font-bold mb-2">Скидка 20% на все книги</h3>
+                        <p class="mb-4">Только до конца месяца скидка 20% на весь ассортимент книг. Успейте купить!</p>
+                        <button class="bg-white text-yellow-600 px-4 py-2 rounded font-bold hover:bg-gray-100 transition">Подробнее</button>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-red-400 to-red-500 rounded-lg p-6 text-white flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/3 mb-4 md:mb-0">
+                        <i class="fas fa-gift text-5xl"></i>
+                    </div>
+                    <div class="md:w-2/3">
+                        <h3 class="text-xl font-bold mb-2">Подарок за покупку</h3>
+                        <p class="mb-4">При покупке от 15 000 ₸ получайте книгу в подарок на выбор из нашего списка.</p>
+                        <button class="bg-white text-red-600 px-4 py-2 rounded font-bold hover:bg-gray-100 transition">Подробнее</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Новинки -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Новые поступления</h2>
+                <a href="#" class="text-green-600 hover:text-green-800 transition">Смотреть все →</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Книга 5 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Новинка</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Атлант расправил плечи</h3>
+                        <p class="text-gray-600 text-sm mb-2">Айн Рэнд</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(47)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">9 200 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="5" data-title="Атлант расправил плечи" data-author="Айн Рэнд" data-price="9200">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 6 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Новинка</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Психология влияния</h3>
+                        <p class="text-gray-600 text-sm mb-2">Роберт Чалдини</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(89)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">6 500 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="6" data-title="Психология влияния" data-author="Роберт Чалдини" data-price="6500">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 7 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">Семь навыков высокоэффективных людей</h3>
+                        <p class="text-gray-600 text-sm mb-2">Стивен Кови</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(156)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">7 800 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="7" data-title="Семь навыков высокоэффективных людей" data-author="Стивен Кови" data-price="7800">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Книга 8 -->
+                <div class="book-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+                    <div class="relative">
+                        <img src="https://m.media-amazon.com/images/I/51xwGSNX-EL._SY425_.jpg" alt="Обложка книги" class="w-full h-64 object-cover">
+                        <div class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Новинка</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">К себе нежно</h3>
+                        <p class="text-gray-600 text-sm mb-2">Ольга Примаченко</p>
+                        <div class="flex items-center mb-3">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="text-gray-600 text-xs ml-1">(72)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-green-600">5 900 ₸</span>
+                            <button class="add-to-cart bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" data-id="8" data-title="К себе нежно" data-author="Ольга Примаченко" data-price="5900">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- О компании -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                    <h2 class="text-3xl font-bold mb-4">О компании BookWorm</h2>
+                    <p class="text-gray-600 mb-4">Мы - крупнейший интернет-магазин книг в Казахстане, работающий с 2015 года. Наша миссия - сделать чтение доступным для каждого.</p>
+                    <p class="text-gray-600 mb-6">В нашем ассортименте более 15 000 книг различных жанров: от классической литературы до современных бестселлеров, от детских книг до профессиональной литературы.</p>
+                    <div class="flex space-x-4">
+                        <div class="bg-green-100 p-4 rounded-lg text-center">
+                            <div class="text-green-600 font-bold text-2xl mb-1">8+</div>
+                            <div class="text-gray-600 text-sm">Лет на рынке</div>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg text-center">
+                            <div class="text-green-600 font-bold text-2xl mb-1">15K+</div>
+                            <div class="text-gray-600 text-sm">Книг в ассортименте</div>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg text-center">
+                            <div class="text-green-600 font-bold text-2xl mb-1">50K+</div>
+                            <div class="text-gray-600 text-sm">Довольных клиентов</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Книжный магазин" class="rounded-lg shadow-lg w-full">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-8 text-center">Почему выбирают BookWorm</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center bg-white p-6 rounded-lg shadow-sm">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-truck text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Быстрая доставка</h3>
+                    <p class="text-gray-600">Доставка по всему Казахстану от 1 дня. В Алматы и Нур-Султане - доставка в день заказа.</p>
+                </div>
+                <div class="text-center bg-white p-6 rounded-lg shadow-sm">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-book-open text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Широкий ассортимент</h3>
+                    <p class="text-gray-600">Более 15 000 книг различных жанров. Регулярное пополнение новинками.</p>
+                </div>
+                <div class="text-center bg-white p-6 rounded-lg shadow-sm">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-percent text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Выгодные цены</h3>
+                    <p class="text-gray-600">Скидки до 30% на популярные книги. Программа лояльности для постоянных клиентов.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подписка на рассылку -->
+    <section class="py-12 bg-green-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">Подпишитесь на рассылку</h2>
+            <p class="mb-6 max-w-2xl mx-auto">Получайте информацию о новых поступлениях, акциях и специальных предложениях первыми</p>
+            <div class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Ваш email" class="flex-grow py-3 px-4 rounded-l-full focus:outline-none text-gray-800">
+                <button class="bg-yellow-400 text-green-800 font-bold py-3 px-6 rounded-r-full hover:bg-yellow-500 transition">Подписаться</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-bold text-lg mb-4 flex items-center">
+                        <i class="fas fa-book mr-2"></i>
+                        <span>BookWorm</span>
+                    </h3>
+                    <p class="text-gray-400">Лучший выбор книг в Казахстане. Предлагаем широкий ассортимент литературы.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Контакты</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span>г. Алматы, ул. Абылайхана 1/1</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span>+7 (702) 963-57-31</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>info@bookworm.kz</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>Пн-Пт: 9:00-18:00</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Информация</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">О магазине</a></li>
+                        <li><a href="#" class="hover:text-white transition">Доставка и оплата</a></li>
+                        <li><a href="#" class="hover:text-white transition">Возврат и обмен</a></li>
+                        <li><a href="#" class="hover:text-white transition">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Мы в соцсетях</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-pink-600 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-400 transition">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-500 transition">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                    <h3 class="font-bold text-lg mt-6 mb-2">Способы оплаты</h3>
+                    <div class="flex space-x-2">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/2560px-MasterCard_Logo.svg.png" alt="MasterCard" class="h-8">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" class="h-8">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_qiwi.svg/1200px-Logo_qiwi.svg.png" alt="Qiwi" class="h-8">
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>© 2023 BookWorm. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Корзина
+        let cart = [];
+        
+        // Элементы DOM
+        const cartBtn = document.getElementById('cart-btn');
+        const mobileCartBtn = document.getElementById('mobile-cart-btn');
+        const cartPreview = document.getElementById('cart-preview');
+        const cartCount = document.getElementById('cart-count');
+        const mobileCartCount = document.getElementById('mobile-cart-count');
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        // Переключение мобильного меню
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Переключение видимости корзины
+        cartBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            cartPreview.classList.toggle('hidden');
+        });
+        
+        mobileCartBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            cartPreview.classList.toggle('hidden');
+        });
+        
+        // Закрытие корзины при клике вне ее
+        document.addEventListener('click', () => {
+            cartPreview.classList.add('hidden');
+        });
+        
+        // Остановка всплытия при клике на саму корзину
+        cartPreview.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Добавление товара в корзину
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                const title = button.getAttribute('data-title');
+                const author = button.getAttribute('data-author');
+                const price = parseInt(button.getAttribute('data-price'));
+                
+                // Проверяем, есть ли уже такая книга в корзине
+                const existingItem = cart.find(item => item.id === id);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id,
+                        title,
+                        author,
+                        price,
+                        quantity: 1
+                    });
+                }
+                
+                updateCart();
+                
+                // Анимация добавления
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-cart-plus"></i>';
+                    button.classList.remove('bg-green-500');
+                    button.classList.add('bg-green-600');
+                }, 1000);
+            });
+        });
+        
+        // Обновление корзины
+        function updateCart() {
+            // Обновляем счетчик
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            mobileCartCount.textContent = totalItems;
+            
+            // Обновляем содержимое корзины
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-sm text-gray-500">Корзина пуста</p>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">${item.title}</p>
+                            <p class="text-xs text-gray-500">${item.author}</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium mr-2">${item.price * item.quantity} ₸</span>
+                            <div class="flex items-center border rounded">
+                                <button class="decrease-item px-2 py-1 text-xs" data-id="${item.id}">-</button>
+                                <span class="px-2 text-xs">${item.quantity}</span>
+                                <button class="increase-item px-2 py-1 text-xs" data-id="${item.id}">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Добавляем обработчики для кнопок + и -
+                document.querySelectorAll('.decrease-item').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const item = cart.find(item => item.id === id);
+                        
+                        if (item.quantity > 1) {
+                            item.quantity -= 1;
+                        } else {
+                            cart = cart.filter(item => item.id !== id);
+                        }
+                        
+                        updateCart();
+                    });
+                });
+                
+                document.querySelectorAll('.increase-item').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const item = cart.find(item => item.id === id);
+                        item.quantity += 1;
+                        updateCart();
+                    });
+                });
+            }
+            
+            // Обновляем итоговую сумму
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `${total} ₸`;
+        }
+        
+        // Фильтрация по категориям
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Здесь можно добавить логику фильтрации книг по категориям
+                // В демо-версии просто имитируем фильтрацию
+                console.log(`Фильтр по категории: ${button.textContent}`);
+            });
+        });
+    </script>
+</body>
+</html>
